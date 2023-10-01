@@ -7,21 +7,50 @@ const { authenticate } = require('../middlewares/authenticate');
 
 /**
  * @swagger
- * /posts/list:
- *   get:
- *     summary: Get all posts
- *     description: Retrieve a list of all posts
- *     responses:
- *       200:
- *         description: A list of posts
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Post'
- *       500:
- *         description: Internal server error
+ * paths:
+ *   /posts/list:
+ *     get:
+ *       summary: Get all posts
+ *       tags:
+ *         - posts
+ *       parameters:
+ *         - name: page
+ *           in: query
+ *           description: Page number
+ *           required: false
+ *           schema:
+ *             type: integer
+ *         - name: limit
+ *           in: query
+ *           description: Number of posts per page
+ *           required: false
+ *           schema:
+ *             type: integer
+ *       responses:
+ *         '200':
+ *           description: Posts retrieved successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   currentPage:
+ *                     type: integer
+ *                   totalPages:
+ *                     type: integer
+ *                   posts:
+ *                     type: array
+ *                     items:
+ *                       $ref: '#/components/schemas/Post'
+ *         '500':
+ *           description: Server error
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
  */
 router.get('/list', postController.getAllPosts);
 
@@ -31,6 +60,8 @@ router.get('/list', postController.getAllPosts);
  *   get:
  *     summary: Get a post by ID
  *     description: Retrieve a post by its ID
+ *     tags:
+ *       - posts
  *     parameters:
  *       - in: path
  *         name: id
@@ -58,12 +89,33 @@ router.get('/:id', postController.getPost);
  *   post:
  *     summary: Create a new post
  *     description: Create a new post with the given data
+ *     tags:
+ *       - posts
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               type:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *               expirationDate:
+ *                 type: string
+ *                 format: date-time
+*         application/json:
  *           schema:
  *             type: object
  *             properties:
@@ -104,6 +156,8 @@ router.post('/', authenticate, postController.createPost);
  *   put:
  *     summary: Update a post by ID
  *     description: Update a post with the given ID
+ *     tags:
+ *       - posts
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -116,7 +170,26 @@ router.post('/', authenticate, postController.createPost);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               type:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *               expirationDate:
+ *                 type: string
+ *                 format: date-time
+  *         application/json:
  *           schema:
  *             type: object
  *             properties:
@@ -161,6 +234,8 @@ router.put('/:id', authenticate, postController.modifyPost);
  *   delete:
  *     summary: Delete a post by ID
  *     description: Delete a post with the given ID
+ *     tags:
+ *       - posts
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -194,42 +269,429 @@ router.delete('/:id', authenticate, postController.deletePost);
 
 /**
  * @swagger
- * /posts/{id}/upvote:
- *   post:
- *     summary: Upvote or remove upvote from a post by ID
- *     description: Upvote or remove upvote from a post with the given ID 
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: ID of the post to upvote
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: An object containing the upvote count and alreadyUpvoted status
- *         content:
+ * paths:
+ *   /posts/{id}/upvote:
+ *     post:
+ *       summary: Upvote or remove upvote from a post by ID
+ *       tags:
+ *         - posts 부가기능
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - name: id
+ *           in: path
+ *           description: ID of the post to upvote
+ *           required: true
+ *           schema:
+ *             type: string
+ *       responses:
+ *         '200':
+ *           description: 게시물 추천
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 message:
+ *                   type: string
  *                 upvotes:
  *                   type: number
  *                   example: 5
- *                 alreadyUpvoted:
- *                   type: boolean
- *                   example: true
- *       401:
- *         description: Unauthorized access
- *       404:
- *         description: Post not found
- *       500:
- *         description: Internal server error
+ *         '201':
+ *           description: 게시물 추천 취소
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 upvotes:
+ *                   type: number
+ *                   example: 4
+ *         '401':
+ *           description: Unauthorized access
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '404':
+ *           description: Post not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '500':
+ *           description: Internal server error
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
  */
 router.post('/:id/upvote', authenticate, postController.upvotePost);
 
+/**
+ * @swagger
+ * paths:
+ *   /posts/{id}/bookmark:
+ *     post:
+ *       summary: Bookmark a post
+ *       tags:
+ *         - posts 부가기능
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - name: id
+ *           in: path
+ *           description: ID of the post
+ *           required: true
+ *           schema:
+ *             type: string
+ *       responses:
+ *         '200':
+ *           description: 북마크 추가
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                   bookmarksCount:
+ *                     type: number
+ *                     example: 1
+ *         '201':
+ *           description: 북마크 취소
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                   bookmarksCount:
+ *                     type: number
+ *                     example: 0
+ *         '401':
+ *           description: Unauthorized access
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '404':
+ *           description: Post not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '500':
+ *           description: Server error
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ */
+
+router.post('/:id/bookmark', authenticate, postController.bookmarkPost);
+/**
+ * @swagger
+ * paths:
+ *   /posts/{id}/comment:
+ *     post:
+ *       summary: Add a comment to a post
+ *       tags:
+ *         - posts 부가기능
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - name: id
+ *           in: path
+ *           description: ID of the post
+ *           required: true
+ *           schema:
+ *             type: string
+ *       requestBody:
+ *         description: Content of the comment
+ *         required: true
+ *         content:
+ *           application/x-www-form-urlencoded:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 content:
+ *                   type: string
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 content:
+ *                   type: string
+ *       responses:
+ *         '201':
+ *           description: Comment added successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                   comments:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         _id:
+ *                           type: string
+ *                         user:
+ *                           type: string
+ *                         content:
+ *                           type: string
+ *                         datePosted:
+ *                           type: string
+ *                   commentsCount:
+ *                     type: number
+ *         '401':
+ *           description: Unauthorized access
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '404':
+ *           description: Post not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '500':
+ *           description: Server error
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ */
+router.post('/:id/comment', authenticate, postController.commentPost);
+
+/**
+ * @swagger
+ * paths:
+ *   /posts/comment/{id}:
+ *     delete:
+ *       summary: Delete a comment on a post
+ *       tags:
+ *         - posts 부가기능
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - name: id
+ *           in: path
+ *           description: ID of the post
+ *           required: true
+ *           schema:
+ *             type: string
+ *       responses:
+ *         '200':
+ *           description: Comment deleted successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                   comments:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         _id:
+ *                           type: string
+ *                         user:
+ *                           type: string
+ *                         content:
+ *                           type: string
+ *                         datePosted:
+ *                           type: string
+ *                   commentsCount:
+ *                     type: number
+ *         '401':
+ *           description: Unauthorized access
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '403':
+ *           description: Only the comment author can delete the comment
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '404':
+ *           description: Post not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '405':
+ *           description: Comment not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '500':
+ *           description: Server error
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ */
+router.delete('/comment/:id', authenticate, postController.deleteComment);
+
+/**
+ * @swagger
+ * paths:
+ *   /posts/comments/{id}:
+ *     put:
+ *       summary: Modify a comment on a post
+ *       tags:
+ *         - posts 부가기능
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - name: id
+ *           in: path
+ *           description: ID of the post
+ *           required: true
+ *           schema:
+ *             type: string
+ *       requestBody:
+ *         description: New content of the comment
+ *         required: true
+ *         content:
+ *           application/x-www-form-urlencoded:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 content:
+ *                   type: string
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 content:
+ *                   type: string
+ *       responses:
+ *         '200':
+ *           description: Comment modified successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                   comments:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         _id:
+ *                           type: string
+ *                         user:
+ *                           type: string
+ *                         content:
+ *                           type: string
+ *                         datePosted:
+ *                           type: string
+ *                   commentsCount:
+ *                     type: number
+ *         '401':
+ *           description: Unauthorized access
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '403':
+ *           description: Only the comment author can modify the comment
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '404':
+ *           description: Post not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '405':
+ *           description: Comment not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '500':
+ *           description: Server error
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ */
+router.put('/comment/:id', authenticate, postController.modifyComment);
 
 module.exports = router;
 
@@ -275,6 +737,7 @@ module.exports = router;
  *           description: Expiry date, only applicable for 거래 and 나눔 types.
  *         author:
  *           type: string
+ *           ref: User
  *           description: The ID of the author from the User model.
  *         authorNickname:
  *           type: string
@@ -303,6 +766,9 @@ module.exports = router;
  *           items:
  *             type: object
  *             properties:
+ *               _id:
+ *                 type: mongoose.Schema.Types.ObjectId
+ *                 description: The ID of the comment.
  *               user:
  *                 type: string
  *                 description: User ID of the commenter.
@@ -316,6 +782,13 @@ module.exports = router;
  *                 type: string
  *                 format: date-time
  *                 description: When the comment was posted.
+ *             description: Array of comments associated with the post.
+ *           commentsCount:
+ *             type: number
+ *             description: The number of comments for the post.
+ *           bookmarksCount:
+ *             type: number
+ *             description: The number of bookmarks for the post.
  *       example:
  *         title: "제목입니다"
  *         content: "내용입니다"

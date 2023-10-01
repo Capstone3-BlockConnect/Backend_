@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-
 const postSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -60,24 +59,18 @@ const postSchema = new mongoose.Schema({
         default: null
     },
     comments: [{
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: true
-        },
-        nickname: {  // 댓글 작성자의 닉네임
-            type: String,
-            required: true
-        },
-        content: {
-            type: String,
-            required: true
-        },
-        datePosted: {
-            type: Date,
-            default: Date.now
-        }
-    }]
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment'
+    }],
+
+    commentsCount: {
+        type: Number,
+        default: 0
+    },
+    bookmarksCount:{
+        type: Number,
+        default: 0
+    }
 });
 
 const Post = mongoose.model('Post', postSchema);

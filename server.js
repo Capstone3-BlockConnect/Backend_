@@ -16,9 +16,11 @@ mongoose.connect(process.env.DB_URL, {
 });
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use('/users', userRoutes);
 app.use('/posts', postRoutes);
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });
+

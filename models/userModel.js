@@ -21,13 +21,18 @@ const userSchema = new mongoose.Schema({
     },
     phoneNumber: {
         type: String,
+        required: true,
         unique: true
     },
     profileImageURL: String, // 프로필 이미지 URL
-    dateOfBirth: Date, // 생년월일
+    dateOfBirth: {  // 생년월일
+        type: Date,
+        required: true
+      }, 
     gender: {
         type: String,
-        enum: ['Male', 'Female'] // 성별
+        enum: ['Male', 'Female'], // 성별
+        required: true
     },
     signUpDate: {
         type: Date,
@@ -38,7 +43,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true
-    }
+    },
+    bookmarks: [{ // 북마크한 게시글
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
+    }],
 });
 const User = mongoose.model('User', userSchema);
 module.exports = User;

@@ -2,12 +2,19 @@ const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { reverseGeocode } = require('../services/geocode');
+const mongoose = require('mongoose');
+const { MongoError } = require('mongodb');
+
 
 // Define the signup function
 exports.signup = async (req, res) => {
     try {
         // 요청 바디에서 사용자 입력 가져오기
-        const { username, email, password, coordinate, phoneNumber, dateOfBirth, gender, bio, nickname } = req.body;
+        const { username, email, password, phoneNumber, dateOfBirth, gender, bio, nickname } = req.body;
+        let { coordinate } = req.body;
+        if (typeof coordinate === 'string') {
+            coordinate = JSON.parse(coordinate);
+        }
         // 좌표를 이용해 지역 정보 가져오기
         const region = await reverseGeocode(coordinate.latitude, coordinate.longitude);
         // 비밀번호 해싱
@@ -39,6 +46,9 @@ exports.signup = async (req, res) => {
             // 유효성 검사 에러인 경우
             const errors = Object.values(error.errors).map(err => err.message);
             return res.status(400).json({ message: errors.join(', ') });
+        } else if (error instanceof MongoError && error.code === 11000) {
+            // 중복 데이터 에러인 경우
+            return res.status(400).json({ message: '중복된 데이터입니다.' });
         } else {
             // 그 외의 에러인 경우
             console.error(error);
@@ -77,7 +87,11 @@ exports.login = async (req, res) => {
 exports.updateProfile = async (req, res) => {
     try {
         const userId = req.user;
-        const { username, email, password, coordinate, phoneNumber, dateOfBirth, gender, bio, nickname } = req.body;
+        const { username, email, password, phoneNumber, dateOfBirth, gender, bio, nickname } = req.body;
+        let { coordinate } = req.body;
+        if (typeof coordinate === 'string') {
+            coordinate = JSON.parse(coordinate);
+        }
         const loginUser = await User.findById(userId);
         // 좌표를 이용해 지역 정보 가져오기
         if (coordinate) {
@@ -105,6 +119,9 @@ exports.updateProfile = async (req, res) => {
             // 유효성 검사 에러인 경우
             const errors = Object.values(error.errors).map(err => err.message);
             return res.status(400).json({ message: errors.join(', ') });
+        } else if (error instanceof MongoError && error.code === 11000) {
+            // 중복 데이터 에러인 경우
+            return res.status(400).json({ message: '중복된 데이터입니다.' });
         } else {
             // 그 외의 에러인 경우
             console.error(error);
@@ -124,4 +141,17 @@ exports.getUserList = async (req, res) => {
     }
 };
 
-
+//get user by id
+exports.getUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        user.password = undefined;
+        res.status(200).json(user);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
