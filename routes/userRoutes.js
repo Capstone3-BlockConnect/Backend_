@@ -9,9 +9,58 @@ const { authenticate } = require('../middlewares/authenticate');
  *   post:
  *     summary: Create a new user
  *     description: Register a new user with the provided information.
+ *     tags:
+ *       - users
  *     requestBody:
  *       required: true
  *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *               - coordinate
+ *               - nickname
+ *               - phoneNumber
+ *               - dateOfBirth
+ *               - gender
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: "exampleuser"
+ *               email:
+ *                 type: string
+ *                 example: "user@example.com"
+ *               password:
+ *                 type: string
+ *                 example: "password"
+ *               coordinate:
+ *                 type: object
+ *                 description: 한국위경도만 받음
+ *                 example: { latitude: 37.123456, longitude: 127.123456 }
+ *                 properties:
+ *                   latitude:
+ *                     type: number
+ *                   longitude:
+ *                     type: number
+ *               phoneNumber:
+ *                 type: string
+ *                 example: "01012345678"
+ *               dateOfBirth:
+ *                 type: string
+ *                 example: "1990-01-01"
+ *               gender:
+ *                 type: string
+ *                 description: enum [Male, Female]
+ *                 example: "Male"
+ *               bio:
+ *                 type: string
+ *                 example: "hello"
+ *               nickname:
+ *                 type: string
+ *                 example: "nickname"
  *         application/json:
  *           schema:
  *             type: object
@@ -69,9 +118,24 @@ router.post('/signup', userController.signup);
  *   post:
  *     summary: User login
  *     description: Authenticate and log in a user.
+ *     tags:
+ *       - users
  *     requestBody:
  *       required: true
  *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: "exampleuser"
+ *               password:
+ *                 type: string
+ *                 example: "password"
  *         application/json:
  *           schema:
  *             type: object
@@ -111,11 +175,60 @@ router.post('/login', userController.login);
  *   post:
  *     summary: Update user profile
  *     description: Update the user's profile information.
+ *     tags:
+ *       - users
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *               - coordinate
+ *               - nickname
+ *               - phoneNumber
+ *               - dateOfBirth
+ *               - gender
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: "exampleuser"
+ *               email:
+ *                 type: string
+ *                 example: "user@example.com"
+ *               password:
+ *                 type: string
+ *                 example: "password"
+ *               coordinate:
+ *                 type: object
+ *                 description: 한국위경도만 받음
+ *                 example: { latitude: 37.123456, longitude: 127.123456 }
+ *                 properties:
+ *                   latitude:
+ *                     type: number
+ *                   longitude:
+ *                     type: number
+ *               phoneNumber:
+ *                 type: string
+ *                 example: "01012345678"
+ *               dateOfBirth:
+ *                 type: string
+ *                 example: "1990-01-01"
+ *               gender:
+ *                 type: string
+ *                 description: enum [Male, Female]
+ *                 example: "Male"
+ *               bio:
+ *                 type: string
+ *                 example: "hello"
+ *               nickname:
+ *                 type: string
+ *                 example: "nickname"
  *         application/json:
  *           schema:
  *             type: object
@@ -165,6 +278,8 @@ router.post('/update', authenticate, userController.updateProfile);
  *   get:
  *     summary: Get a list of all users
  *     description: Returns a list of all users in the database
+ *     tags:
+ *       - users
  *     responses:
  *       200:
  *         description: A list of user objects
@@ -178,6 +293,49 @@ router.post('/update', authenticate, userController.updateProfile);
  *         description: Internal server error
  */
 router.get('/list', userController.getUserList);
+
+/**
+ * @swagger
+ * paths:
+ *   /users/{id}:
+ *     get:
+ *       summary: Get a user by ID
+ *       tags:
+ *         - users
+ *       parameters:
+ *         - name: id
+ *           in: path
+ *           description: ID of the user to retrieve
+ *           required: true
+ *           schema:
+ *             type: string
+ *       responses:
+ *         '200':
+ *           description: User retrieved successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 $ref: '#/components/schemas/User'
+ *         '404':
+ *           description: User not found
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *         '500':
+ *           description: Internal server error
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ */
+router.get('/:id', userController.getUserProfile);
 
 module.exports = router;
 
@@ -193,6 +351,8 @@ module.exports = router;
  *         - password
  *         - region
  *         - nickname
+ *         - phoneNumber
+ *         - gender
  *       properties:
  *         username:
  *           type: string
@@ -230,6 +390,14 @@ module.exports = router;
  *         nickname:
  *           type: string
  *           description: The user's nickname.
+ *         bookmarks:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               type: mongoose.Schema.Types.ObjectId,
+ *               ref: 'Post'
+ *           description: The user's bookmarks.
  *       example:
  *         username: "아이디"
  *         email: "이메일@example.com"
