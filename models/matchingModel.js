@@ -8,7 +8,7 @@ const matchingResultSchema = new mongoose.Schema({
         required: true
     },
     storeName: {
-        type: mongoose.Schema.Types.ObjectId, // 가게 이름의 ID를 참조
+        type: mongoose.Schema.Types.ObjectId, // 가게 ID를 참조
         ref: 'Store',
         required: true
     },
@@ -23,7 +23,17 @@ const matchingResultSchema = new mongoose.Schema({
         required: true
     },
     user1Memo: String,
-    user2Memo: String
+    user2Memo: String,
+    user1confirm: {
+        type: Boolean,
+        default: false,
+        required: true
+    },
+    user2confirm: {
+        type: Boolean,
+        default: false,
+        required: true
+    }
 });
 
 // 모델 생성
