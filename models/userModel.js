@@ -29,8 +29,7 @@ const userSchema = new mongoose.Schema({
         unique: true
     },
     foodCategory: {
-        type: [String],
-        required: true
+        type: String,
     },
 });
 const User = mongoose.model('User', userSchema);

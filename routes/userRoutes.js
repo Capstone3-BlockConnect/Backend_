@@ -7,9 +7,9 @@ const { authenticate } = require('../middlewares/authenticate');
 router.post('/signup', userController.signup);
 router.post('/login', userController.login);
 router.get('/list', userController.getAllUsers);
-router.get('/:id', authenticate, userController.getProfile);
-router.put('/:id', authenticate, userController.modifyProfile);
-router.delete('/:id', authenticate, userController.deleteUser);
+router.get('/:id', userController.getProfileByUserId);
+router.put('/', authenticate, userController.modifyProfile);
+router.delete('/', authenticate, userController.deleteUser);
 
 
 module.exports = router;
