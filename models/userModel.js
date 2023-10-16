@@ -1,5 +1,36 @@
 const mongoose = require('mongoose');
-
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         userId:
+ *           type: string
+ *           description: The user's ID
+ *         password:
+ *           type: string
+ *           description: The user's password (hashed)
+ *         nickname:
+ *           type: string
+ *           description: The user's nickname
+ *         gender:
+ *           type: string
+ *           enum:
+ *             - '남성'
+ *             - '여성'
+ *           description: The user's gender (either '남성' or '여성')
+ *         age:
+ *           type: number
+ *           description: The user's age
+ *         phoneNumber:
+ *           type: string
+ *           description: The user's phone number
+ *         foodCategory:
+ *           type: string
+ *           description: The user's food category (optional)
+ */
 const userSchema = new mongoose.Schema({
     userId: {
         type: String,
@@ -12,7 +43,8 @@ const userSchema = new mongoose.Schema({
     },
     nickname: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     gender: {
         type: String,

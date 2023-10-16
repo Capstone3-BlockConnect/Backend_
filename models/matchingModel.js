@@ -1,4 +1,41 @@
-const matchingResultSchema = new mongoose.Schema({
+const mongoose = require('mongoose');
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Matching:
+ *       type: object
+ *       properties:
+ *         date:
+ *           type: string
+ *           format: date
+ *           description: The date of the matching result
+ *         time:
+ *           type: string
+ *           description: The time of the matching result
+ *         storeName:
+ *           type: string
+ *           description: The ID of the store
+ *         user1:
+ *           type: string
+ *           description: The ID of user 1
+ *         user2:
+ *           type: string
+ *           description: The ID of user 2
+ *         user1Memo:
+ *           type: string
+ *           description: Memo from user 1
+ *         user2Memo:
+ *           type: string
+ *           description: Memo from user 2
+ *         user1confirm:
+ *           type: boolean
+ *           description: Confirmation status of user 1
+ *         user2confirm:
+ *           type: boolean
+ *           description: Confirmation status of user 2
+ */
+const matchingSchema = new mongoose.Schema({
     date: {
         type: Date,
         required: true
@@ -37,6 +74,6 @@ const matchingResultSchema = new mongoose.Schema({
 });
 
 // 모델 생성
-const MatchingResult = mongoose.model('MatchingResult', matchingResultSchema);
+const Matching = mongoose.model('Matching', matchingSchema);
 
-module.exports = MatchingResult;
+module.exports = Matching;
