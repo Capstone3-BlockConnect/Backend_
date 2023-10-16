@@ -11,7 +11,7 @@ exports.request = async (req, res) => {
         const matchingRequest = new MatchingRequest({
             date,
             time,
-            userId: req.userId,
+            user: req.user,
             category,
             memo
         });
@@ -59,6 +59,25 @@ exports.getAllRequests = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
+exports.getRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const matchingRequests = await MatchingRequest.findById(id);
+        if (!matchingRequests) {
+            return res.status(404).json({ message: 'Matching request not found' });
+        }
+        res.status(200).json({ matchingRequests });
+    }
+    catch (err) {
+        if (err instanceof mongoose.CastError) {
+            return res.status(400).json({ message: 'Invalid Matching request id' });
+        }
+        else {
+            return res.status(500).json({ message: 'Internal server error' });
+        }
+    }
+}
+
 exports.getMyRequest = async (req, res) => {
     try {
         const matchingRequests = await MatchingRequest.find({ user:req.user });
@@ -66,6 +85,21 @@ exports.getMyRequest = async (req, res) => {
             return res.status(404).json({ message: 'Matching request not found' });
         }
         res.status(200).json({ matchingRequests });
+    }
+    catch (err) {
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+exports.deleteMyRequest = async (req, res) => {
+    try {
+        const matchingRequests = await MatchingRequest.find({ user:req.user });
+        if (!matchingRequests) {
+            return res.status(404).json({ message: 'Matching request not found' });
+        }
+        matchingRequests.forEach(async (matchingRequest) => {
+            await matchingRequest.remove();
+        });
+        res.status(200).json({ message: 'Matching request deleted' });
     }
     catch (err) {
         return res.status(500).json({ message: 'Internal server error' });
@@ -89,6 +123,7 @@ exports.getMatching = async (req, res) => {
         }
     }
 }
+
 exports.getAllMatchings = async (req, res) => {
     try {
         const matchings = await Matching.find();
@@ -98,6 +133,7 @@ exports.getAllMatchings = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
+
 exports.getMyMatching = async (req, res) => {
     try {
         const matchings = await Matching.find({ user: req.user });
@@ -105,6 +141,21 @@ exports.getMyMatching = async (req, res) => {
             return res.status(404).json({ message: 'Matching not found' });
         }
         res.status(200).json({ matchings });
+    }
+    catch (err) {
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+exports.deleteMyMatching = async (req, res) => {
+    try {
+        const matchings = await Matching.find({ user: req.user });
+        if (!matchings) {
+            return res.status(404).json({ message: 'Matching not found' });
+        }
+        matchings.forEach(async (matching) => {
+            await matching.remove();
+        });
+        res.status(200).json({ message: 'Matching deleted' });
     }
     catch (err) {
         return res.status(500).json({ message: 'Internal server error' });

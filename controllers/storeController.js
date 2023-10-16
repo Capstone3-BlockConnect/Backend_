@@ -5,7 +5,7 @@ const { MongoError } = require('mongodb');
 // Create a new store
 exports.register = async (req, res) => {
     try{
-        const {storeName,address,location,businessHours,phoneNumber,storeDescription,menu,photos,category} = req.body;
+        const {storeName,address,location,businessHours,phoneNumber,storeDescription,menu,photos,category,genre} = req.body;
         const store = new Store({
             storeName,
             address,
@@ -15,7 +15,8 @@ exports.register = async (req, res) => {
             storeDescription,
             menu,
             photos,
-            category
+            category,
+            genre,
         });
         await store.save();
         res.status(201).json({message: 'Store created', store});
@@ -33,7 +34,7 @@ exports.register = async (req, res) => {
     }
 }
 
-// Get all stores
+
 exports.getAllStores = async (req, res) => {
     try{
         const stores = await Store.find();
@@ -66,7 +67,7 @@ exports.getStore = async (req, res) => {
 exports.modifyStore = async (req, res) => {
     try{
         const {id} = req.params;
-        const {storeName,address,location,businessHours,phoneNumber,storeDescription,menu,photos,category} = req.body;
+        const {storeName,address,location,businessHours,phoneNumber,storeDescription,menu,photos,category,genre} = req.body;
         const store = await Store.findByIdAndUpdate(id, {
             storeName,
             address,
@@ -76,7 +77,8 @@ exports.modifyStore = async (req, res) => {
             storeDescription,
             menu,
             photos,
-            category
+            category,
+            genre
         });
         if(!store){
             return res.status(404).json({message: 'Store not found'});

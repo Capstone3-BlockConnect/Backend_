@@ -10,7 +10,7 @@ exports.signup = async (req, res) => {
     try{
         const {userId,password,nickname,gender,age,phoneNumber,foodCategory} = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new user({
+        const user = new User({
             userId,
             password: hashedPassword,
             nickname,
@@ -20,13 +20,12 @@ exports.signup = async (req, res) => {
             foodCategory,
         });
         await user.save();
-        const token = 'Bearer ' + jwt.sign({ user:user._id }, process.env.JWT_SECRET);
-        delete user.password;
-        res.status(201).json({message: 'User created', token,user});
+        res.status(201).json({message: 'User created'});
     }
     catch(err){
+        console.log(err);
         if(err instanceof MongoError && err.code === 11000){
-            return res.status(409).json({message: 'User already exists'});
+            return res.status(409).json({message: 'Id나 nickname 또는 phoneNumber가 이미 존재합니다'});
         }
         else if(err.name === 'ValidationError'){
             return res.status(400).json({message: err.message});
@@ -49,11 +48,12 @@ exports.login = async (req, res) => {
         if(!isMatch){
             return res.status(402).json({message: '비밀번호가 일치하지 않습니다'});
         }
-        const token = 'Bearer ' + jwt.sign({ user:user_id }, process.env.JWT_SECRET);
-        delete user.password;
+        const token = 'Bearer ' + jwt.sign({ user: user._id }, process.env.JWT_SECRET);
+        user.password=undefined;
         res.status(200).json({message: 'Login success', token,user});
     }
     catch(err){
+        console.log(err);
         return res.status(500).json({message: 'Internal server error'});
     }
 }
@@ -63,6 +63,7 @@ exports.getAllUsers = async (req, res) => {
         const users = await User.find({}, { password: 0 }); // 비밀번호 필드를 제외하고 조회
         res.status(200).json({ users });
     } catch (err) {
+        console.log(err);
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
@@ -71,6 +72,21 @@ exports.getProfileByUserId = async (req, res) => {
     try{
         const userId=req.params.id;
         const user = await User.findOne({userId},{password:0});
+        if(!user){
+            return res.status(401).json({message: 'User not found'});
+        }
+        res.status(200).json({user});
+
+    }
+    catch(err){
+        console.log(err);
+        return res.status(500).json({message: 'Internal server error'});
+    }
+}
+
+exports.getMyProfile = async (req, res) => {   
+    try{
+        const user = await User.findById(req.user,{password:0});
         if(!user){
             return res.status(401).json({message: 'User not found'});
         }

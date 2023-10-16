@@ -20,10 +20,8 @@ exports.authenticate = (req, res, next) => {
     try {
         // 토큰 검증
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
         // 요청 객체에 사용자 설정
         req.user = decoded.user;
-
         next();
     } catch (err) {
         res.status(401).json({ msg: '유효하지 않은 토큰입니다.' });

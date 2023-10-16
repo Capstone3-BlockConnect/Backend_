@@ -21,7 +21,7 @@ const options = {
     },
   },
   // API 주석 파일의 경로
-  apis: ['./routes/*.js'], // 주석이 있는 모든 라우트 파일을 스캔
+  apis: ['./routes/*.js','./models/*.js'], // 주석이 있는 모든 라우트 파일을 스캔
 };
 
 const swaggerSpec = swaggerJSDoc(options);
