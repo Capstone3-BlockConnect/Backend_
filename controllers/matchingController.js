@@ -92,19 +92,20 @@ exports.getMyRequest = async (req, res) => {
 }
 exports.deleteMyRequest = async (req, res) => {
     try {
-        const matchingRequests = await MatchingRequest.find({ user:req.user });
-        if (!matchingRequests) {
+        const deleteResult = await MatchingRequest.deleteMany({ user: req.user });
+
+        if (deleteResult.deletedCount === 0) {
             return res.status(404).json({ message: 'Matching request not found' });
         }
-        matchingRequests.forEach(async (matchingRequest) => {
-            await matchingRequest.remove();
-        });
-        res.status(200).json({ message: 'Matching request deleted' });
+        
+        res.status(200).json({ message: 'Matching requests deleted' });
     }
     catch (err) {
+        console.error(err); // It's good practice to log the specific error to aid in debugging
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
+
 exports.getMatching = async (req, res) => {
     try {
         const { id } = req.params;

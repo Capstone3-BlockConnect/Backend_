@@ -104,7 +104,7 @@ const { authenticate } = require('../middlewares/authenticate');
  *                 message:
  *                   type: string
  */
-router.post('/register', authenticate, storeController.register);
+router.post('/register', storeController.register);
 /**
  * @swagger
  * /stores/list:
@@ -134,7 +134,7 @@ router.post('/register', authenticate, storeController.register);
  *                 message:
  *                   type: string
  */
-router.get('/list', authenticate, storeController.getAllStores);
+router.get('/list', storeController.getAllStores);
 /**
  * @swagger
  * /stores/one/{id}:
@@ -187,10 +187,10 @@ router.get('/list', authenticate, storeController.getAllStores);
  *                 message:
  *                   type: string
  */
-router.get('/one/:id', authenticate, storeController.getStore);
+router.get('/one/:id', storeController.getStore);
 /**
  * @swagger
- * /stores/{id}:
+ * /stores/one/{id}:
  *   put:
  *     summary: Modify a store by ID
  *     tags:
@@ -300,7 +300,7 @@ router.get('/one/:id', authenticate, storeController.getStore);
  *                 message:
  *                   type: string
  */
-router.put('/one/:id', authenticate, storeController.modifyStore);
+router.put('/one/:id', storeController.modifyStore);
 /**
  * @swagger
  * /stores/one/{id}:
@@ -353,6 +353,6 @@ router.put('/one/:id', authenticate, storeController.modifyStore);
  *                 message:
  *                   type: string
  */
-router.delete('/one/:id', authenticate, storeController.deleteStore);
+router.delete('/one/:id',storeController.deleteStore);
 
 module.exports = router;

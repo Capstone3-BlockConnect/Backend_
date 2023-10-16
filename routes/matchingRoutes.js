@@ -98,11 +98,11 @@ const { authenticate } = require('../middlewares/authenticate');
 router.post('/request', authenticate, matchingController.request);
 /**
  * @swagger
- * /matchings/request/{id}:
+ * /matchings/request/one/{id}:
  *   delete:
  *     summary: Delete a matching request by ID
  *     tags:
- *       - Test
+ *       - Matching
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -152,7 +152,7 @@ router.post('/request', authenticate, matchingController.request);
  *                 message:
  *                   type: string
  */
-router.delete('/request/:id', authenticate, matchingController.deleteRequest);
+router.delete('/request/one/:id', authenticate, matchingController.deleteRequest);
 /**
  * @swagger
  * /matchings/request/list:
@@ -185,7 +185,7 @@ router.delete('/request/:id', authenticate, matchingController.deleteRequest);
 router.get('/request/list', matchingController.getAllRequests);
 /**
  * @swagger
- * /matchings/request/{id}:
+ * /matchings/request/one/{id}:
  *   get:
  *     summary: Get a matching request by ID
  *     tags:
@@ -235,7 +235,7 @@ router.get('/request/list', matchingController.getAllRequests);
  *                 message:
  *                   type: string 
  */
-router.get('/request/:id', matchingController.getRequest);
+router.get('/request/one/:id', matchingController.getRequest);
 /**
  * @swagger
  * /matchings/request/my:
@@ -274,7 +274,7 @@ router.get('/request/my', authenticate, matchingController.getMyRequest);
  *   delete:
  *     summary: Delete all matching requests of the user
  *     tags:
- *       - Matching
+ *       - Test
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -355,7 +355,7 @@ router.get('/matching/:id', matchingController.getMatching);
  *   get:
  *     summary: Get all matchings
  *     tags:
- *       - Matching
+ *       - Test
  *     responses:
  *       200:
  *         description: List of matchings
@@ -385,7 +385,7 @@ router.get('/matching/list', authenticate, matchingController.getAllMatchings);
  *   get:
  *     summary: Get all matchings of the user
  *     tags:
- *       - Matching
+ *       - Test
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -417,7 +417,7 @@ router.get('/matching/my', authenticate, matchingController.getMyMatching);
  *   delete:
  *     summary: Delete all matchings of the user
  *     tags:
- *       - Matching
+ *       - Test
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -447,7 +447,7 @@ router.delete('/matching/my', authenticate, matchingController.deleteMyMatching)
  *   put:
  *     summary: Confirm a matching by ID
  *     tags:
- *       - Matching
+ *       - Test
  *     parameters:
  *       - in: path
  *         name: id
