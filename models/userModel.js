@@ -29,6 +29,7 @@ const mongoose = require('mongoose');
  *           description: The user's phone number
  *         foodCategory:
  *           type: string
+ *           enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페']
  *           description: The user's food category (optional)
  */
 const userSchema = new mongoose.Schema({
@@ -62,6 +63,7 @@ const userSchema = new mongoose.Schema({
     },
     foodCategory: {
         type: String,
+        enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페'],
     },
 });
 const User = mongoose.model('User', userSchema);

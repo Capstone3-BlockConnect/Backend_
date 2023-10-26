@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
  *     Store:
  *       type: object
  *       properties:
- *         storeName:
+ *         store:
  *           type: string
  *           description: The name of the store
  *         genre:
@@ -77,10 +77,11 @@ const mongoose = require('mongoose');
  *           description: URLs of photos of the store
  *         category:
  *           type: string
+ *           enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페']
  *           description: The category of the store
  */
 const storeSchema = new mongoose.Schema({
-    storeName: {
+    store: {
         type: String,
         required: true
     },
@@ -122,7 +123,11 @@ const storeSchema = new mongoose.Schema({
         }
     ],
     photos: [String], // 사진 URL 배열
-    category: String,
+    category: {
+        type: String,
+        enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페'],
+        required: true
+    }
 
 });
 

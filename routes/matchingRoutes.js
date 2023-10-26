@@ -9,7 +9,7 @@ const { authenticate } = require('../middlewares/authenticate');
  *   post:
  *     summary: Create a new matching request
  *     tags:
- *       - Matching
+ *       - MatchingRequest
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -27,12 +27,12 @@ const { authenticate } = require('../middlewares/authenticate');
  *               time:
  *                 type: string
  *                 format: time
+ *                 enum: ['12:00', '13:00', '14:00', '17:00', '18:00', '19:00']
  *                 description: Time of the matching request
- *                 example: "12:00"
  *               category:
  *                 type: string
+ *                 enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페']
  *                 description: Category of the matching request
- *                 example: "한식"
  *               memo:
  *                 type: string
  *                 description: Additional memo for the matching request
@@ -45,16 +45,20 @@ const { authenticate } = require('../middlewares/authenticate');
  *                 type: string
  *                 format: date
  *                 description: Date of the matching request
+ *                 example: "2023-10-28"
  *               time:
  *                 type: string
  *                 format: time
+ *                 enum: ['12:00', '13:00', '14:00', '17:00', '18:00', '19:00']
  *                 description: Time of the matching request
  *               category:
  *                 type: string
+ *                 enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페']
  *                 description: Category of the matching request
  *               memo:
  *                 type: string
  *                 description: Additional memo for the matching request
+ *                 example: "매운거 싫어요"
  *     responses:
  *       201:
  *         description: Matching request created successfully
@@ -69,31 +73,12 @@ const { authenticate } = require('../middlewares/authenticate');
  *                   type: object
  *       400:
  *         description: Bad request, validation error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *       401:
+ *        description: Unauthorized, authentication error 
  *       409:
  *         description: Matching request already exists
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       500:
  *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  */
 router.post('/request', authenticate, matchingController.request);
 /**
@@ -102,7 +87,7 @@ router.post('/request', authenticate, matchingController.request);
  *   delete:
  *     summary: Delete a matching request by ID
  *     tags:
- *       - Matching
+ *       - MatchingRequest
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -126,31 +111,12 @@ router.post('/request', authenticate, matchingController.request);
  *                   type: object
  *       400:
  *         description: Bad request, invalid ID
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *       401:
+ *         description: Unauthorized, authentication error or not owner of the matching request
  *       404:
  *         description: Matching request not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       500:
  *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  */
 router.delete('/request/one/:id', authenticate, matchingController.deleteRequest);
 /**
@@ -159,7 +125,7 @@ router.delete('/request/one/:id', authenticate, matchingController.deleteRequest
  *   get:
  *     summary: Get all matching requests
  *     tags:
- *       - Matching
+ *       - MatchingRequest
  *     responses:
  *       200:
  *         description: List of matching requests
@@ -174,13 +140,6 @@ router.delete('/request/one/:id', authenticate, matchingController.deleteRequest
  *                     type: object
  *       500:
  *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  */
 router.get('/request/list', matchingController.getAllRequests);
 /**
@@ -189,7 +148,7 @@ router.get('/request/list', matchingController.getAllRequests);
  *   get:
  *     summary: Get a matching request by ID
  *     tags:
- *       - Test
+ *       - MatchingRequest
  *     parameters:
  *       - name: id
  *         in: path
@@ -209,31 +168,10 @@ router.get('/request/list', matchingController.getAllRequests);
  *                   type: object
  *       400:
  *         description: Bad request, invalid ID
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       404:
  *         description: Matching request not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string 
  *       500:
  *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object 
- *               properties:
- *                 message:
- *                   type: string 
  */
 router.get('/request/one/:id', matchingController.getRequest);
 /**
@@ -242,7 +180,7 @@ router.get('/request/one/:id', matchingController.getRequest);
  *   get:
  *     summary: Get all matching requests of the user
  *     tags:
- *       - Matching
+ *       - MatchingRequest
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -260,12 +198,6 @@ router.get('/request/one/:id', matchingController.getRequest);
  *       500:
  *         description: Internal server error
  *         content:
- *           application/json:
- *             schema:
- *               type: object 
- *               properties:
- *                 message:
- *                   type: string 
  */
 router.get('/request/my', authenticate, matchingController.getMyRequest);
 /**
@@ -274,7 +206,7 @@ router.get('/request/my', authenticate, matchingController.getMyRequest);
  *   delete:
  *     summary: Delete all matching requests of the user
  *     tags:
- *       - Test
+ *       - MatchingRequest
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -301,11 +233,29 @@ router.delete('/request/my', authenticate, matchingController.deleteMyRequest);
 
 /**
  * @swagger
- * /matchings/{id}:
+ * /matchings/request/all:
+ *   delete:
+ *     summary: 모든 매칭 요청 삭제
+ *     tags:
+ *       - MatchingRequest
+ *     description: 모든 매칭 요청을 삭제합니다.
+ *     responses:
+ *       200:
+ *         description: 매칭 요청 삭제 성공
+ *       404:
+ *         description: 매칭 요청을 찾을 수 없음
+ *       500:
+ *         description: 내부 서버 오류
+ */
+router.delete('/request/all', matchingController.deleteAllMatchingRequests);
+
+/**
+ * @swagger
+ * /matchings/one/{id}:
  *   get:
  *     summary: Get a matching by ID
  *     tags:
- *       - Test
+ *       - Matching
  *     parameters:
  *       - in: path
  *         name: id
@@ -322,40 +272,19 @@ router.delete('/request/my', authenticate, matchingController.deleteMyRequest);
  *               type: object
  *       400:
  *         description: Invalid Matching id
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       404:
  *         description: Matching not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       500:
  *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  */
-router.get('/matching/:id', matchingController.getMatching);
+router.get('/one/:id', matchingController.getMatching);
 /**
  * @swagger
  * /matchings/list:
  *   get:
  *     summary: Get all matchings
  *     tags:
- *       - Test
+ *       - Matching
  *     responses:
  *       200:
  *         description: List of matchings
@@ -370,22 +299,15 @@ router.get('/matching/:id', matchingController.getMatching);
  *                     type: object
  *       500:
  *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object 
- *               properties:
- *                 message:
- *                   type: string 
  */
-router.get('/matching/list', authenticate, matchingController.getAllMatchings);
+router.get('/list', matchingController.getAllMatchings);
 /**
  * @swagger
  * /matchings/my:
  *   get:
  *     summary: Get all matchings of the user
  *     tags:
- *       - Test
+ *       - Matching
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -402,52 +324,17 @@ router.get('/matching/list', authenticate, matchingController.getAllMatchings);
  *                     type: object
  *       500:
  *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object 
- *               properties:
- *                 message:
- *                   type: string 
  */
-router.get('/matching/my', authenticate, matchingController.getMyMatching);
+router.get('/my', authenticate, matchingController.getMyMatching);
 /**
  * @swagger
- * /matchings/my:
- *   delete:
- *     summary: Delete all matchings of the user
- *     tags:
- *       - Test
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Matchings of the user deleted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string 
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object 
- *               properties:
- *                 message:
- *                   type: string 
- */
-router.delete('/matching/my', authenticate, matchingController.deleteMyMatching);
-/**
- * @swagger
- * /matchings/{id}/confirm:
- *   put:
+ * /matchings/confirm/{id}:
+ *   post:
  *     summary: Confirm a matching by ID
  *     tags:
- *       - Test
+ *       - Matching
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -467,32 +354,28 @@ router.delete('/matching/my', authenticate, matchingController.deleteMyMatching)
  *                   type: string
  *       401:
  *         description: You are not a participant of this matching
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       404:
  *         description: Matching not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       500:
  *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  */
-router.post('/:id/confirm', authenticate, matchingController.confirmMatching);
+router.post('/confirm/:id', authenticate, matchingController.confirmMatching);
+/**
+ * @swagger
+ * /matchings/all:
+ *   delete:
+ *     summary: 모든 매칭 삭제
+ *     tags:
+ *      - Matching
+ *     description: 모든 매칭을 삭제합니다.
+ *     responses:
+ *       200:
+ *         description: 매칭 삭제 성공
+ *       404:
+ *         description: 매칭을 찾을 수 없음
+ *       500:
+ *         description: 내부 서버 오류
+ */
+router.delete('/all', matchingController.deleteAllMatchings)
 
 module.exports = router;

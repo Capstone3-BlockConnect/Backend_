@@ -40,7 +40,9 @@ const { authenticate } = require('../middlewares/authenticate');
  *                 description: The user's phone number
  *               foodCategory:
  *                 type: string
+ *                 enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페']
  *                 description: The user's food category
+ *                 
  * 
  *         application/json:
  *           schema:
@@ -59,10 +61,36 @@ const { authenticate } = require('../middlewares/authenticate');
  *               phoneNumber:
  *                 type: string
  *               foodCategory:
+ *                 enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페']
  *                 type: string
  *     responses:
  *       201:
- *         description: User created successfully
+ *         description: User created successfully and logged in
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     userId:
+ *                       type: string
+ *                     nickname:
+ *                       type: string
+ *                     gender:
+ *                       type: string
+ *                     age:
+ *                       type: integer
+ *                     phoneNumber:
+ *                       type: string
+ *                     foodCategory:
+ *                       type: string
+ * 
  *       400:
  *         description: Bad request
  *       409:
@@ -174,7 +202,7 @@ router.get('/list', userController.getAllUsers);
  * @swagger
  * /users/profile/{id}:
  *   get:
- *     summary: Get user profile by ID
+ *     summary: Get user profile by id
  *     tags:
  *       - User
  *     parameters:
@@ -212,7 +240,7 @@ router.get('/list', userController.getAllUsers);
  *       500:
  *         description: Internal server error
  */
-router.get('/profile/:id', userController.getProfileByUserId);
+router.get('/profile/:id', userController.getProfile);
 /**
  * @swagger
  * /users/my/profile:
@@ -244,7 +272,7 @@ router.get('/my/profile', authenticate, userController.getMyProfile);
  *   put:
  *     summary: Modify the profile of the authenticated user
  *     tags:
- *       - Test
+ *       - User
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -263,12 +291,14 @@ router.get('/my/profile', authenticate, userController.getMyProfile);
  *                 type: string
  *               gender:
  *                 type: string
+ *                 enum: ['남성', '여성']
  *               age:
  *                 type: integer
  *               phoneNumber:
  *                 type: string
  *               foodCategory:
  *                 type: string
+ *                 enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페']
  *         application/json:
  *           schema:
  *             type: object
@@ -281,12 +311,14 @@ router.get('/my/profile', authenticate, userController.getMyProfile);
  *                 type: string
  *               gender:
  *                 type: string
+ *                 enum: ['남성', '여성']
  *               age:
  *                 type: integer
  *               phoneNumber:
  *                 type: string
  *               foodCategory:
  *                 type: string
+ *                 enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페']
  *     responses:
  *       200:
  *         description: Successfully modified the user's profile
@@ -315,7 +347,7 @@ router.put('/my/profile', authenticate, userController.modifyProfile);
  *   delete:
  *     summary: Delete the authenticated user's account
  *     tags:
- *       - Test
+ *       - User
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -349,10 +381,27 @@ router.put('/my/profile', authenticate, userController.modifyProfile);
  *         description: Unauthorized - User not found or authentication failed
  *       402:
  *         description: Invalid password
+ *       403:
+ *         description: User has pending matching requests or matching 
  *       500:
  *         description: Internal server error
  */
-router.delete('/my', authenticate, userController.deleteUser);
+router.delete('/my/profile', authenticate, userController.deleteUser);
+/**
+ * @swagger
+ * /users/all:
+ *   delete:
+ *     summary: 모든 사용자 지우기
+ *     tags:
+ *        - User
+ *     description: 모든 사용자를 지우기.
+ *     responses:
+ *       '200':
+ *         description: 성공적으로 가져온 경우
+ *       '500':
+ *         description: 서버 오류
+ */
+router.delete('/all', userController.deleteAllUsers);
 
 
 module.exports = router;
