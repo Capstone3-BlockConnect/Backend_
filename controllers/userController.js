@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const { MongoError } = require('mongodb');
+const MatchingRequest = require('../models/matchingRequestModel');
+const Matching = require('../models/matchingModel');
 
 
 
@@ -20,7 +22,9 @@ exports.signup = async (req, res) => {
             foodCategory,
         });
         await user.save();
-        res.status(201).json({message: 'User created'});
+        const token = 'Bearer ' + jwt.sign({ user: user._id }, process.env.JWT_SECRET);
+        user.password=undefined;
+        res.status(201).json({message: 'User created', token,user});
     }
     catch(err){
         console.log(err);
@@ -68,10 +72,9 @@ exports.getAllUsers = async (req, res) => {
     }
 }
 
-exports.getProfileByUserId = async (req, res) => {
+exports.getProfile = async (req, res) => {
     try{
-        const userId=req.params.id;
-        const user = await User.findOne({userId},{password:0});
+        const user = await User.findById(req.params.id,{password:0});
         if(!user){
             return res.status(401).json({message: 'User not found'});
         }
@@ -120,7 +123,15 @@ exports.modifyProfile = async (req, res) => {
         
         res.status(200).json({message: 'User modified',user});
     } catch (err) {
-        return res.status(500).json({ message: 'Internal server error' });
+        console.log(err);
+        if (err instanceof MongoError && err.code === 11000) {
+            return res.status(409).json({ message: 'Id나 nickname 또는 phoneNumber가 이미 존재합니다' });
+        } else if (err.name === 'ValidationError') {
+            return res.status(400).json({ message: err.message });
+        }
+        else {
+            return res.status(500).json({ message: 'Internal server error' });
+        }
     }
 }
 
@@ -135,10 +146,29 @@ exports.deleteUser = async (req, res) => {
         if(!isMatch){
             return res.status(402).json({message: '비밀번호가 일치하지 않습니다'});
         }
-        await user.remove();
+        const matchingRequests = await MatchingRequest.find({user:req.user});
+        if (matchingRequests.length > 0) {
+            return res.status(403).json({ message: '매칭 요청이 존재합니다' });
+        }
+        const matchings = await Matching.find({user:req.user});
+        if (matchings.length > 0) {
+            return res.status(403).json({ message: '매칭이 존재합니다' });
+        }
+        await user.deleteOne();
         res.status(200).json({message: 'User deleted'});
     }
     catch(err){
+        console.log(err);
+        return res.status(500).json({message: 'Internal server error'});
+    }
+}
+exports.deleteAllUsers = async (req, res) => {
+    try{
+        await User.deleteMany({});
+        res.status(200).json({message: 'All users deleted'});
+    }
+    catch(err){
+        console.log(err);
         return res.status(500).json({message: 'Internal server error'});
     }
 }

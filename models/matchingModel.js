@@ -12,8 +12,9 @@ const mongoose = require('mongoose');
  *           description: The date of the matching result
  *         time:
  *           type: string
+ *           enum: ['12:00', '13:00', '14:00', '17:00', '18:00', '19:00']
  *           description: The time of the matching result
- *         storeName:
+ *         store:
  *           type: string
  *           description: The ID of the store
  *         user1:
@@ -34,6 +35,10 @@ const mongoose = require('mongoose');
  *         user2confirm:
  *           type: boolean
  *           description: Confirmation status of user 2
+ *         category:
+ *           type: string
+ *           enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페']
+ *           description: The category of the store
  */
 const matchingSchema = new mongoose.Schema({
     date: {
@@ -42,9 +47,10 @@ const matchingSchema = new mongoose.Schema({
     },
     time: {
         type: String,
+        enum: ['12:00', '13:00', '14:00', '17:00', '18:00', '19:00'],
         required: true
     },
-    storeName: {
+    store: {
         type: mongoose.Schema.Types.ObjectId, // 가게 ID를 참조
         ref: 'Store',
         required: true
@@ -69,6 +75,11 @@ const matchingSchema = new mongoose.Schema({
     user2confirm: {
         type: Boolean,
         default: false,
+        required: true
+    },
+    category: {
+        type: String,
+        enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페'],
         required: true
     }
 });

@@ -34,10 +34,15 @@ exports.request = async (req, res) => {
 exports.deleteRequest = async (req, res) => {
     try {
         const { id } = req.params;
-        const matchingRequest = await MatchingRequest.findByIdAndDelete(id);
+        const user = req.user;
+        const matchingRequest = await MatchingRequest.findById(id);
         if (!matchingRequest) {
             return res.status(404).json({ message: 'Matching request not found' });
         }
+        if (user!=matchingRequest.user) {
+            return res.status(401).json({ message: 'You are not the owner of this matching request' });
+        }
+        await matchingRequest.deleteOne();
         res.status(200).json({ message: 'Matching request deleted', matchingRequest });
     }
     catch (err) {
@@ -92,19 +97,33 @@ exports.getMyRequest = async (req, res) => {
 }
 exports.deleteMyRequest = async (req, res) => {
     try {
-        const matchingRequests = await MatchingRequest.find({ user:req.user });
-        if (!matchingRequests) {
+        const deleteResult = await MatchingRequest.deleteMany({ user: req.user });
+
+        if (deleteResult.deletedCount === 0) {
             return res.status(404).json({ message: 'Matching request not found' });
         }
-        matchingRequests.forEach(async (matchingRequest) => {
-            await matchingRequest.remove();
-        });
-        res.status(200).json({ message: 'Matching request deleted' });
+        
+        res.status(200).json({ message: 'Matching requests deleted' });
     }
     catch (err) {
+        console.error(err); 
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
+exports.deleteAllMatchingRequests = async (req, res) => {
+    try {
+        const deleteResult = await MatchingRequest.deleteMany();
+        if (deleteResult.deletedCount === 0) {
+            return res.status(404).json({ message: 'Matching requests not found' });
+        }
+        res.status(200).json({ message: 'Matching requests deleted' });
+    }
+    catch (err) {
+        console.error(err); 
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 exports.getMatching = async (req, res) => {
     try {
         const { id } = req.params;
@@ -136,7 +155,7 @@ exports.getAllMatchings = async (req, res) => {
 
 exports.getMyMatching = async (req, res) => {
     try {
-        const matchings = await Matching.find({ user: req.user });
+        const matchings = await Matching.find({ $or: [{ user1: req.user }, { user2: req.user }] });
         if (!matchings) {
             return res.status(404).json({ message: 'Matching not found' });
         }
@@ -146,21 +165,7 @@ exports.getMyMatching = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
-exports.deleteMyMatching = async (req, res) => {
-    try {
-        const matchings = await Matching.find({ user: req.user });
-        if (!matchings) {
-            return res.status(404).json({ message: 'Matching not found' });
-        }
-        matchings.forEach(async (matching) => {
-            await matching.remove();
-        });
-        res.status(200).json({ message: 'Matching deleted' });
-    }
-    catch (err) {
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-}
+
 exports.confirmMatching = async (req, res) => {
     try {
         const matching= await Matching.findById(req.params.id);
@@ -168,22 +173,36 @@ exports.confirmMatching = async (req, res) => {
             return res.status(404).json({message: 'Matching not found'});
         }
         if(matching.user1==req.user){
-            matching.user1Confirm=true;
+            matching.user1confirm=true;
         }
         else if(matching.user2==req.user){
-            matching.user2Confirm=true;
+            matching.user2confirm=true;
         }
         else{
             return res.status(401).json({message: 'You are not a participant of this matching'});
         }
-        matching.save();
-        if(matching.user1Confirm&&matching.user2Confirm){
-            matching.remove();
+        await matching.save();
+        if(matching.user1confirm&&matching.user2confirm){
+            await matching.deleteOne();
             return res.status(200).json({message: 'Matching confirmed and deleted'});
         }
         return res.status(200).json({message: 'Matching confirmed'});
     }
     catch(err){
+        console.log(err);
         return res.status(500).json({message: 'Internal server error'});
+    }
+}
+exports.deleteAllMatchings = async (req, res) => {
+    try {
+        const deleteResult = await Matching.deleteMany();
+        if (deleteResult.deletedCount === 0) {
+            return res.status(404).json({ message: 'Matchings not found' });
+        }
+        res.status(200).json({ message: 'Matchings deleted' });
+    }
+    catch (err) {
+        console.error(err); 
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }

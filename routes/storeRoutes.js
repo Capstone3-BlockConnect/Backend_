@@ -10,7 +10,7 @@ const { authenticate } = require('../middlewares/authenticate');
  *   post:
  *     summary: Register a new store
  *     tags:
- *       - Test
+ *       - NotUsed
  *     requestBody:
  *       description: Store information
  *       required: true
@@ -104,7 +104,7 @@ const { authenticate } = require('../middlewares/authenticate');
  *                 message:
  *                   type: string
  */
-router.post('/register', authenticate, storeController.register);
+router.post('/register', storeController.register);
 /**
  * @swagger
  * /stores/list:
@@ -126,15 +126,8 @@ router.post('/register', authenticate, storeController.register);
  *                     type: object
  *       500:
  *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  */
-router.get('/list', authenticate, storeController.getAllStores);
+router.get('/list', storeController.getAllStores);
 /**
  * @swagger
  * /stores/one/{id}:
@@ -161,40 +154,19 @@ router.get('/list', authenticate, storeController.getAllStores);
  *                   type: object
  *       400:
  *         description: Invalid Store ID
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       404:
  *         description: Store not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       500:
  *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  */
-router.get('/one/:id', authenticate, storeController.getStore);
+router.get('/one/:id', storeController.getStore);
 /**
  * @swagger
- * /stores/{id}:
+ * /stores/one/{id}:
  *   put:
  *     summary: Modify a store by ID
  *     tags:
- *       - Test
+ *       - NotUsed
  *     parameters:
  *       - in: path
  *         name: id
@@ -300,14 +272,14 @@ router.get('/one/:id', authenticate, storeController.getStore);
  *                 message:
  *                   type: string
  */
-router.put('/one/:id', authenticate, storeController.modifyStore);
+router.put('/one/:id', storeController.modifyStore);
 /**
  * @swagger
  * /stores/one/{id}:
  *   delete:
  *     summary: Delete a store by ID
  *     tags:
- *       - Test
+ *       - NotUsed
  *     parameters:
  *       - in: path
  *         name: id
@@ -353,6 +325,6 @@ router.put('/one/:id', authenticate, storeController.modifyStore);
  *                 message:
  *                   type: string
  */
-router.delete('/one/:id', authenticate, storeController.deleteStore);
+router.delete('/one/:id',storeController.deleteStore);
 
 module.exports = router;
