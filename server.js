@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const userRoutes = require('./routes/userRoutes');
 const storeRoutes = require('./routes/storeRoutes');
 const matchingRoutes = require('./routes/matchingRoutes');
+const reportRoutes = require('./routes/reportRoutes');
 require('dotenv').config();
 const app = express();
 const job= require('./services/scheduler');
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/users', userRoutes);
 app.use('/stores', storeRoutes);
 app.use('/matchings', matchingRoutes);
+app.use('/reports', reportRoutes);
 
 async function startServer(){
         try{

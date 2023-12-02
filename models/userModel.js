@@ -65,6 +65,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페'],
     },
+    openChatLink: {
+        type: String,
+        required: false,
+        default: undefined
+    },
 });
 const User = mongoose.model('User', userSchema);
 module.exports = User;

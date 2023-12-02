@@ -12,8 +12,11 @@ async function matching() {
         const times = MatchingRequest.schema.path('time').enumValues;
         const categories = MatchingRequest.schema.path('category').enumValues;
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        console.log(today);
         today.setHours(today.getHours() + 9);
+        console.log(today);
+        today.setUTCHours(0, 0, 0, 0);
+        console.log(today);
 
         for (let j = 0; j < categories.length; j++) {
             const stores = await Store.find({ category: categories[j] });
