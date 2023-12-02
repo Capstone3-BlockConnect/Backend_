@@ -403,6 +403,201 @@ router.delete('/my/profile', authenticate, userController.deleteUser);
  */
 router.delete('/all', userController.deleteAllUsers);
 
+/**
+ * @swagger
+ * /users/randomNickname:
+ *   get:
+ *     summary: 랜덤 닉네임 생성
+ *     tags:
+ *       - User
+ *     description: 호출하면 랜덤으로 닉네임 생성하고 중복 검사하고 중복이면 다시 생성 아니면 반환
+ *     responses:
+ *       200:
+ *         description: Successfully generated a random nickname
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 randomNickname:
+ *                   type: string
+ *                   description: The generated random nickname
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/randomNickname', userController.createRandomNickname);
+/**
+ * @swagger
+ * /users/my/openChatLink:
+ *   put:
+ *     summary: Open Chat Link 수정
+ *     tags: 
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               openChatLink:
+ *                 type: string
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               openChatLink:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User modified
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Validation Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       409:
+ *         description: Id나 nickname 또는 phoneNumber가 이미 존재합니다
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.put('/my/openChatLink', authenticate, userController.modifyMyOpenChatLink);
+/**
+ * @swagger
+ * /users/my/openChatLink:
+ *   get:
+ *     summary: 내 Open Chat Link 가져오기
+ *     tags: 
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User modified
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 openChatLink:
+ *                   type: string
+ *       401:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.get('/my/openChatLink', authenticate, userController.getMyOpenChatLink);
+/**
+ * @swagger
+ * /users/my/openChatLink:
+ *   delete:
+ *     summary: 내 Open Chat Link 삭제
+ *     tags: 
+ *       - User
+ *     description: 내 Open Chat Link 를 ''로 수정
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User modified
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.delete('/my/openChatLink', authenticate, userController.deleteMyOpenChatLink);
+/**
+ * @swagger
+ * /users/openChatLink/{id}:
+ *   get:
+ *     summary: Open Chat Link 가져오기
+ *     tags: 
+ *       - User
+ *     description: _id에 해당하는 User의 Open Chat Link 가져오기
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: User ID to fetch openChatLink
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: get openChatLink
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 openChatLink:
+ *                   type: string
+ *       401:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         
+ */
+router.get('/openChatLink/:id', userController.getOpenChatLink);
 
 module.exports = router;
 

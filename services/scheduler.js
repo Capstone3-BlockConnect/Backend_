@@ -12,8 +12,11 @@ async function matching() {
         const times = MatchingRequest.schema.path('time').enumValues;
         const categories = MatchingRequest.schema.path('category').enumValues;
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        console.log(today);
         today.setHours(today.getHours() + 9);
+        console.log(today);
+        today.setUTCHours(0, 0, 0, 0);
+        console.log(today);
 
         for (let j = 0; j < categories.length; j++) {
             const stores = await Store.find({ category: categories[j] });
@@ -25,8 +28,8 @@ async function matching() {
                             date: today,
                             time: times[i],
                             store: getRandomStore(stores, today, times[i]),
-                            user1memo: matchingRequests[0].memo,
-                            user2memo: matchingRequests[1].memo,
+                            user1Memo: matchingRequests[0].memo,
+                            user2Memo: matchingRequests[1].memo,
                             user1: matchingRequests[0].user,
                             user2: matchingRequests[1].user,
                             category: categories[j]
@@ -81,7 +84,7 @@ function getRandomStore(stores, date, time) {
 }
 
 const rule = new schedule.RecurrenceRule();
-rule.minute = new schedule.Range(0,59,3);//일단 5분에 한번씩 오늘자 매칭생성
+rule.minute = new schedule.Range(0,59,5);//일단 5분에 한번씩 오늘자 매칭생성
 
 const job = schedule.scheduleJob(rule, matching);
 module.exports = job;
