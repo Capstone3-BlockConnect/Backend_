@@ -94,7 +94,7 @@ exports.deleteReport = async (req, res) => {
         if(report.userId !== user){
             return res.status(401).json({message: 'You are not the author of this report'});
         }
-        await report.delete();
+        await report.deleteOne();
         res.status(200).json({message: 'Delete report'});  
     }
     catch(err){
