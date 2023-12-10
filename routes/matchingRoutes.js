@@ -326,40 +326,7 @@ router.get('/list', matchingController.getAllMatchings);
  *         description: Internal server error
  */
 router.get('/my', authenticate, matchingController.getMyMatching);
-/**
- * @swagger
- * /matchings/confirm/{id}:
- *   post:
- *     summary: Confirm a matching by ID
- *     tags:
- *       - Matching
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the matching to confirm
- *     responses:
- *       200:
- *         description: Matching confirmed
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       401:
- *         description: You are not a participant of this matching
- *       404:
- *         description: Matching not found
- *       500:
- *         description: Internal server error
- */
-router.post('/confirm/:id', authenticate, matchingController.confirmMatching);
+
 /**
  * @swagger
  * /matchings/all:
@@ -376,6 +343,105 @@ router.post('/confirm/:id', authenticate, matchingController.confirmMatching);
  *       500:
  *         description: 내부 서버 오류
  */
-router.delete('/all', matchingController.deleteAllMatchings)
+router.delete('/all', matchingController.deleteAllMatchings);
+
+/**
+ * @swagger
+ * /matchings/myLog:
+ *   get:
+ *     summary: 현재 사용자의 매칭 로그 검색
+ *     tags:
+ *      - Matching
+ *     description: 현재 사용자가 참여했었던 매칭의 목록과 해당 매칭 날짜, 다른 사용자 정보를 반환합니다.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 성공적인 연산
+ *         schema:
+ *           type: object
+ *           properties:
+ *             logs:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   date:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2023-11-07T00:00:00.000Z"
+ *                   user:
+ *                     type: string
+ *                     example: "5f8d04b3c88a4e2e50f7b07b"
+ *       404:
+ *         description: 매칭을 찾을 수 없음
+ *       500:
+ *         description: 내부 서버 오류
+ */
+router.get('/myLog', authenticate,matchingController.getMyLog);
+/**
+ * @swagger
+ * /matchings/statistics:
+ *   get:
+ *     summary: 매칭 관련 통계 정보 검색
+ *     tags:
+ *       - Matching
+ *     description: 전체 매칭 수를 검색합니다.
+ *     responses:
+ *       200:
+ *         description: 성공적으로 통계 정보 검색
+ *         schema:
+ *           type: object
+ *           properties:
+ *             statistics:
+ *               type: number
+ *               example: 100
+ *       404:
+ *         description: 매칭 정보가 없음
+ *       500:
+ *         description: 내부 서버 오류
+ */
+router.get('/statistics', matchingController.getStatistics);
+/**
+ * @swagger
+ * /matchings/myStatistics:
+ *   get:
+ *     summary: 현재 사용자의 매칭 통계 정보 검색
+ *     tags:
+ *       - Matching
+ *     description: 현재 사용자가 참여한 전체 매칭 수를 검색합니다.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 성공적으로 통계 정보 검색
+ *         schema:
+ *           type: object
+ *           properties:
+ *             statistics:
+ *               type: number
+ *               example: 25
+ *       404:
+ *         description: 매칭 정보가 없음
+ *       500:
+ *         description: 내부 서버 오류
+ */
+router.get('/myStatistics', authenticate, matchingController.getMyStatistics);
+
+/**
+ * @swagger
+ * /matchings/matchingToLog:
+ *   put:
+ *     summary: 모든 매칭을 로그로 이동
+ *     tags:
+ *       - Matching
+ *     description: 모든 매칭을 로그로 이동합니다.
+ *     responses:
+ *       200:
+ *         description: 매칭 로그로 이동 성공
+ *       500:
+ *         description: 내부 서버 오류
+ */
+router.put('/matchingToLog', matchingController.matchingToLog)
 
 module.exports = router;

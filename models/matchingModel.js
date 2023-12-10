@@ -67,21 +67,16 @@ const matchingSchema = new mongoose.Schema({
     },
     user1Memo: String,
     user2Memo: String,
-    user1confirm: {
-        type: Boolean,
-        default: false,
-        required: true
-    },
-    user2confirm: {
-        type: Boolean,
-        default: false,
-        required: true
-    },
     category: {
         type: String,
         enum: ['한식' , '일식', '양식', '아시안', '테이크아웃', '술집', '치킨/피자', '카페'],
         required: true
-    }
+    },
+    matchingEnd: {
+        type: Boolean,
+        default: false,
+        required: true
+    },
 });
 
 // 모델 생성

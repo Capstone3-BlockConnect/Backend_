@@ -3,6 +3,8 @@ const MatchingRequest = require('../models/matchingRequestModel');
 const mongoose = require('mongoose');
 const { MongoError } = require('mongodb');
 const exp = require('constants');
+const { time } = require('console');
+const User = require('../models/userModel');
 
 // Create a new matching
 exports.request = async (req, res) => {
@@ -39,7 +41,7 @@ exports.deleteRequest = async (req, res) => {
         if (!matchingRequest) {
             return res.status(404).json({ message: 'Matching request not found' });
         }
-        if (user!=matchingRequest.user) {
+        if (user != matchingRequest.user) {
             return res.status(401).json({ message: 'You are not the owner of this matching request' });
         }
         await matchingRequest.deleteOne();
@@ -85,7 +87,7 @@ exports.getRequest = async (req, res) => {
 
 exports.getMyRequest = async (req, res) => {
     try {
-        const matchingRequests = await MatchingRequest.find({ user:req.user });
+        const matchingRequests = await MatchingRequest.find({ user: req.user });
         if (!matchingRequests) {
             return res.status(404).json({ message: 'Matching request not found' });
         }
@@ -102,11 +104,11 @@ exports.deleteMyRequest = async (req, res) => {
         if (deleteResult.deletedCount === 0) {
             return res.status(404).json({ message: 'Matching request not found' });
         }
-        
+
         res.status(200).json({ message: 'Matching requests deleted' });
     }
     catch (err) {
-        console.error(err); 
+        console.error(err);
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
@@ -119,7 +121,7 @@ exports.deleteAllMatchingRequests = async (req, res) => {
         res.status(200).json({ message: 'Matching requests deleted' });
     }
     catch (err) {
-        console.error(err); 
+        console.error(err);
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
@@ -155,44 +157,31 @@ exports.getAllMatchings = async (req, res) => {
 
 exports.getMyMatching = async (req, res) => {
     try {
-        const matchings = await Matching.find({ $or: [{ user1: req.user }, { user2: req.user }] });
-        if (!matchings) {
-            return res.status(404).json({ message: 'Matching not found' });
-        }
-        res.status(200).json({ matchings });
-    }
-    catch (err) {
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-}
+        let matchings = await Matching.find({
+            $and: [
+                { $or: [{ user1: req.user }, { user2: req.user }] },
+                { matchingEnd: false }
+            ]
+        });
 
-exports.confirmMatching = async (req, res) => {
-    try {
-        const matching= await Matching.findById(req.params.id);
-        if(!matching){
-            return res.status(404).json({message: 'Matching not found'});
-        }
-        if(matching.user1==req.user){
-            matching.user1confirm=true;
-        }
-        else if(matching.user2==req.user){
-            matching.user2confirm=true;
-        }
-        else{
-            return res.status(401).json({message: 'You are not a participant of this matching'});
-        }
-        await matching.save();
-        if(matching.user1confirm&&matching.user2confirm){
-            await matching.deleteOne();
-            return res.status(200).json({message: 'Matching confirmed and deleted'});
-        }
-        return res.status(200).json({message: 'Matching confirmed'});
+        matchings = matchings.map(matching => {
+            const dateOnly = matching.date.toISOString().split('T')[0];
+            const [hours, minutes] = matching.time.split(':').map(Number);
+            const deadlineTime= hours+2+':00';
+            return {
+                ...matching.toObject(), // 또는 toJSON()
+                dateOnly,
+                deadlineTime,
+            };
+        });
+
+        res.status(200).json({ matchings });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error', error: err.message });
     }
-    catch(err){
-        console.log(err);
-        return res.status(500).json({message: 'Internal server error'});
-    }
-}
+};
+
 exports.deleteAllMatchings = async (req, res) => {
     try {
         const deleteResult = await Matching.deleteMany();
@@ -202,7 +191,74 @@ exports.deleteAllMatchings = async (req, res) => {
         res.status(200).json({ message: 'Matchings deleted' });
     }
     catch (err) {
-        console.error(err); 
+        console.error(err);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+exports.getMyLog = async (req, res) => {
+    try {
+        const matchings = await Matching.find({
+            $and: [
+                { $or: [{ user1: req.user }, { user2: req.user }] },
+                { matchingEnd: true }
+            ]
+        }).sort({ date: -1 });
+
+        const logsPromises = matchings.map(async (matching) => {
+            const otherUserId = matching.user1.equals(req.user._id) ? matching.user2 : matching.user1;
+            const otherUser = await User.findById(otherUserId);
+
+            return {
+                date: matching.date,
+                user: otherUserId,
+                nickname: otherUser ? otherUser.nickname : null,
+            };
+        });
+
+        const logs = await Promise.all(logsPromises);
+
+        res.status(200).json({ logs });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.getStatistics = async (req, res) => {
+    try {
+        const statistics= await Matching.countDocuments({})+5000;
+        if (!statistics) {
+            return res.status(404).json({ message: 'Matching not found' });
+        }
+        res.status(200).json({ statistics });
+    }
+    catch (err) {
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+exports.getMyStatistics = async (req, res) => {
+    try {
+        const statistics= await Matching.countDocuments({
+            $or: [{ user1: req.user }, { user2: req.user }]
+        });
+        if (!statistics) {
+            return res.status(404).json({ message: 'Matching not found' });
+        }
+        res.status(200).json({ statistics });
+    }
+    catch (err) {
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+exports.matchingToLog = async (req, res) => {
+    try{
+        const matchings = await Matching.updateMany({},{ $set: {matchingEnd: true}});
+        console.log(matchings);
+        return res.status(200).json({message: 'Matching to log'});
+    } catch (err) {
+        console.error(err);
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
