@@ -5,12 +5,12 @@ const mongoose = require('mongoose');
 const { MongoError } = require('mongodb');
 const MatchingRequest = require('../models/matchingRequestModel');
 const Matching = require('../models/matchingModel');
-
+const { sendPushNotification } = require('../services/pushNotification');
 
 
 exports.signup = async (req, res) => {
-    try{
-        let {userId,password,nickname,gender,age,phoneNumber,foodCategory} = req.body;
+    try {
+        let { userId, password, nickname, gender, age, phoneNumber, foodCategory } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
         if (!nickname) {
             const adjectives = [
@@ -37,16 +37,16 @@ exports.signup = async (req, res) => {
                 "사과", "바나나", "오렌지", "포도", "딸기", "수박", "참외", "복숭아", "키위", "망고",
                 "셔츠", "바지", "치마", "드레스", "코트", "자켓", "신발", "모자", "장갑", "스카프"
             ];
-            while(true){
+            while (true) {
                 const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
                 const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-                const randomNickname = randomAdjective +" "+randomNoun;
+                const randomNickname = randomAdjective + " " + randomNoun;
                 console.log(randomNickname);
                 if (await User.findOne({ nickname: randomNickname })) {
                     continue;
                 }
-                else{
-                    nickname=randomNickname;
+                else {
+                    nickname = randomNickname;
                     break;
                 }
             }
@@ -62,42 +62,42 @@ exports.signup = async (req, res) => {
         });
         await user.save();
         const token = 'Bearer ' + jwt.sign({ user: user._id }, process.env.JWT_SECRET);
-        user.password=undefined;
-        res.status(201).json({message: 'User created', token,user});
+        user.password = undefined;
+        res.status(201).json({ message: 'User created', token, user });
     }
-    catch(err){
+    catch (err) {
         console.log(err);
-        if(err instanceof MongoError && err.code === 11000){
-            return res.status(409).json({message: 'Id나 nickname 또는 phoneNumber가 이미 존재합니다'});
+        if (err instanceof MongoError && err.code === 11000) {
+            return res.status(409).json({ message: 'Id나 nickname 또는 phoneNumber가 이미 존재합니다' });
         }
-        else if(err.name === 'ValidationError'){
-            return res.status(400).json({message: err.message});
+        else if (err.name === 'ValidationError') {
+            return res.status(400).json({ message: err.message });
         }
-        else{
-            return res.status(500).json({message: 'Internal server error'});
+        else {
+            return res.status(500).json({ message: 'Internal server error' });
         }
     }
 }
 
 // Login
 exports.login = async (req, res) => {
-    try{
-        const {userId,password} = req.body;
-        const user = await User.findOne({userId});
-        if(!user){
-            return res.status(401).json({message: '없는 사용자 입니다'});
+    try {
+        const { userId, password } = req.body;
+        const user = await User.findOne({ userId });
+        if (!user) {
+            return res.status(401).json({ message: '없는 사용자 입니다' });
         }
         const isMatch = await bcrypt.compare(password, user.password);
-        if(!isMatch){
-            return res.status(402).json({message: '비밀번호가 일치하지 않습니다'});
+        if (!isMatch) {
+            return res.status(402).json({ message: '비밀번호가 일치하지 않습니다' });
         }
         const token = 'Bearer ' + jwt.sign({ user: user._id }, process.env.JWT_SECRET);
-        user.password=undefined;
-        res.status(200).json({message: 'Login success', token,user});
+        user.password = undefined;
+        res.status(200).json({ message: 'Login success', token, user });
     }
-    catch(err){
+    catch (err) {
         console.log(err);
-        return res.status(500).json({message: 'Internal server error'});
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }
 
@@ -112,55 +112,55 @@ exports.getAllUsers = async (req, res) => {
 }
 
 exports.getProfile = async (req, res) => {
-    try{
-        const user = await User.findById(req.params.id,{password:0});
-        if(!user){
-            return res.status(401).json({message: 'User not found'});
+    try {
+        const user = await User.findById(req.params.id, { password: 0 });
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
         }
-        res.status(200).json({user});
+        res.status(200).json({ user });
 
     }
-    catch(err){
+    catch (err) {
         console.log(err);
-        return res.status(500).json({message: 'Internal server error'});
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }
 
-exports.getMyProfile = async (req, res) => {   
-    try{
-        const user = await User.findById(req.user,{password:0});
-        if(!user){
-            return res.status(401).json({message: 'User not found'});
+exports.getMyProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user, { password: 0 });
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
         }
-        res.status(200).json({user});
+        res.status(200).json({ user });
 
     }
-    catch(err){
-        return res.status(500).json({message: 'Internal server error'});
+    catch (err) {
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }
 exports.modifyProfile = async (req, res) => {
-    try{
-        const{oldPassword,newPassword,nickname,gender,age,phoneNumber,foodCategory} = req.body;
-        const user= await User.findById(req.user);
-        if(!user){
-            return res.status(401).json({message: 'User not found'});
+    try {
+        const { oldPassword, newPassword, nickname, gender, age, phoneNumber, foodCategory } = req.body;
+        const user = await User.findById(req.user);
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
         }
         const isMatch = await bcrypt.compare(oldPassword, user.password);
-        if(!isMatch){
-            return res.status(402).json({message: '비밀번호가 일치하지 않습니다'});
+        if (!isMatch) {
+            return res.status(402).json({ message: '비밀번호가 일치하지 않습니다' });
         }
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        user.nickname=nickname;
-        user.gender=gender;
-        user.age=age;
-        user.phoneNumber=phoneNumber;
-        user.foodCategory=foodCategory;
-        user.password=hashedPassword;
+        user.nickname = nickname;
+        user.gender = gender;
+        user.age = age;
+        user.phoneNumber = phoneNumber;
+        user.foodCategory = foodCategory;
+        user.password = hashedPassword;
 
         await user.save();
-        
-        res.status(200).json({message: 'User modified',user});
+
+        res.status(200).json({ message: 'User modified', user });
     } catch (err) {
         console.log(err);
         if (err instanceof MongoError && err.code === 11000) {
@@ -175,44 +175,44 @@ exports.modifyProfile = async (req, res) => {
 }
 
 exports.deleteUser = async (req, res) => {
-    try{
-        const{password} = req.body;
-        const user= await User.findById(req.user);
-        if(!user){
-            return res.status(401).json({message: 'User not found'});
+    try {
+        const { password } = req.body;
+        const user = await User.findById(req.user);
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
         }
         const isMatch = await bcrypt.compare(password, user.password);
-        if(!isMatch){
-            return res.status(402).json({message: '비밀번호가 일치하지 않습니다'});
+        if (!isMatch) {
+            return res.status(402).json({ message: '비밀번호가 일치하지 않습니다' });
         }
-        const matchingRequests = await MatchingRequest.find({user:req.user});
+        const matchingRequests = await MatchingRequest.find({ user: req.user });
         if (matchingRequests.length > 0) {
             return res.status(403).json({ message: '매칭 요청이 존재합니다' });
         }
-        const matchings = await Matching.find({user:req.user});
+        const matchings = await Matching.find({ user: req.user });
         if (matchings.length > 0) {
             return res.status(403).json({ message: '매칭이 존재합니다' });
         }
         await user.deleteOne();
-        res.status(200).json({message: 'User deleted'});
+        res.status(200).json({ message: 'User deleted' });
     }
-    catch(err){
+    catch (err) {
         console.log(err);
-        return res.status(500).json({message: 'Internal server error'});
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }
 exports.deleteAllUsers = async (req, res) => {
-    try{
+    try {
         await User.deleteMany({});
-        res.status(200).json({message: 'All users deleted'});
+        res.status(200).json({ message: 'All users deleted' });
     }
-    catch(err){
+    catch (err) {
         console.log(err);
-        return res.status(500).json({message: 'Internal server error'});
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }
-exports.createRandomNickname= async (req, res) => {
-    try{
+exports.createRandomNickname = async (req, res) => {
+    try {
         const adjectives = [
             "빠른", "느린", "큰", "작은", "밝은", "어두운", "강한", "약한", "뜨거운", "차가운",
             "신선한", "낡은", "예쁜", "못생긴", "행복한", "슬픈", "즐거운", "지루한", "재미있는", "따분한",
@@ -237,34 +237,34 @@ exports.createRandomNickname= async (req, res) => {
             "사과", "바나나", "오렌지", "포도", "딸기", "수박", "참외", "복숭아", "키위", "망고",
             "셔츠", "바지", "치마", "드레스", "코트", "자켓", "신발", "모자", "장갑", "스카프"
         ];
-        while(true){
+        while (true) {
             const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
             const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-            const randomNickname = randomAdjective +" "+randomNoun;
+            const randomNickname = randomAdjective + " " + randomNoun;
             if (await User.findOne({ nickname: randomNickname })) {
                 continue;
             }
-            else{
-                return res.status(200).json({randomNickname});
+            else {
+                return res.status(200).json({ randomNickname });
             }
         }
-        
+
     }
-    catch(err){
+    catch (err) {
         console.log(err);
-        return res.status(500).json({message: 'Internal server error'});
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }
 exports.modifyMyOpenChatLink = async (req, res) => {
-    try{
-        const{openChatLink} = req.body;
-        const user= await User.findById(req.user);
-        if(!user){
-            return res.status(401).json({message: 'User not found'});
+    try {
+        const { openChatLink } = req.body;
+        const user = await User.findById(req.user);
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
         }
-        user.openChatLink=openChatLink;
+        user.openChatLink = openChatLink;
         await user.save();
-        res.status(200).json({message: 'User modified'});
+        res.status(200).json({ message: 'User modified' });
     } catch (err) {
         console.log(err);
         if (err instanceof MongoError && err.code === 11000) {
@@ -278,26 +278,26 @@ exports.modifyMyOpenChatLink = async (req, res) => {
     }
 }
 exports.getMyOpenChatLink = async (req, res) => {
-    try{
-        const user= await User.findById(req.user);
-        if(!user){
-            return res.status(401).json({message: 'User not found'});
+    try {
+        const user = await User.findById(req.user);
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
         }
-        res.status(200).json({openChatLink:user.openChatLink});
+        res.status(200).json({ openChatLink: user.openChatLink });
     } catch (err) {
         console.log(err);
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
 exports.deleteMyOpenChatLink = async (req, res) => {
-    try{
-        const user= await User.findById(req.user);
-        if(!user){
-            return res.status(401).json({message: 'User not found'});
+    try {
+        const user = await User.findById(req.user);
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
         }
-        user.openChatLink=undefined;
+        user.openChatLink = undefined;
         await user.save();
-        res.status(200).json({message: 'User modified'});
+        res.status(200).json({ message: 'User modified' });
     } catch (err) {
         console.log(err);
         if (err instanceof MongoError && err.code === 11000) {
@@ -311,16 +311,41 @@ exports.deleteMyOpenChatLink = async (req, res) => {
     }
 }
 exports.getOpenChatLink = async (req, res) => {
-    try{
-        const user= await User.findById(req.params.id);
-        if(!user){
-            return res.status(401).json({message: 'User not found'});
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
         }
-        res.status(200).json({openChatLink:user.openChatLink});
+        res.status(200).json({ openChatLink: user.openChatLink });
     } catch (err) {
         console.log(err);
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
-
-
+exports.addPushToken = async (req, res) => {
+    try {
+        const user = await User.findById(req.user);
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+        const { pushToken } = req.body;
+        user.pushToken = pushToken;
+        await user.save();
+        res.status(200).json({ message: 'add pushToken' });
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+exports.sendPushNotification = async (req, res) => {
+    try {
+        const { pushToken, title, body } = req.body;
+        sendPushNotification(pushToken, title, body);
+        return res.status(200).json({ message: 'send push notification' });
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}

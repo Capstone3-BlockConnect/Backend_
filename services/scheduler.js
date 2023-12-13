@@ -5,6 +5,8 @@ const { MongoError } = require('mongodb');
 const Matching = require('../models/matchingModel');
 const Store = require('../models/storeModel');
 const {format} = require('date-fns');  
+const {sendPushNotification} = require('./pushNotification');
+const User = require('../models/userModel');
 
 async function matching() {
     console.log("매칭 시작");
@@ -35,6 +37,10 @@ async function matching() {
                             category: categories[j]
                         });
                         await matching.save();
+                        const user1 = await User.findById(matchingRequests[0].user);
+                        sendPushNotification(user1.pushToken, '매칭이 성사되었습니다.', '매칭이 성사되었습니다.');
+                        const user2 = await User.findById(matchingRequests[1].user);
+                        sendPushNotification(user2.pushToken, '매칭이 성사되었습니다.', '매칭이 성사되었습니다.');                      
                         await MatchingRequest.findByIdAndDelete(matchingRequests[0]._id);
                         await MatchingRequest.findByIdAndDelete(matchingRequests[1]._id);
                         matchingRequests.splice(0, 2);
@@ -43,6 +49,8 @@ async function matching() {
                         // 한명만 남으면
                         if (matchingRequests.length == 1) {
                             //매칭실패 알림보내고 지우기
+                            const user1 = await User.findById(matchingRequests[0].user);
+                            sendPushNotification(user1.pushToken, '매칭이 실패되었습니다.', '매칭이 실패되었습니다.');
                             console.log(matchingRequests[0].user + "님 매칭실패 알림보내기")
                             await MatchingRequest.findByIdAndDelete(matchingRequests[0]._id);
                         }

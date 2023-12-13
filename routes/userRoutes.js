@@ -598,6 +598,98 @@ router.delete('/my/openChatLink', authenticate, userController.deleteMyOpenChatL
  *         
  */
 router.get('/openChatLink/:id', userController.getOpenChatLink);
+/**
+ * @swagger
+ * /users/pushToken:
+ *   post:
+ *     summary: Add push token
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       description: Push token
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               pushToken:
+ *                 type: string
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               pushToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Push token added
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 
+router.post('/pushToken', authenticate, userController.addPushToken);
+/**
+ * @swagger
+ * /users/testPushNotification:
+ *   post:
+ *     summary: Send test push notification
+ *     tags:
+ *       - User
+ *     requestBody:
+ *       description: Push notification details
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               pushToken:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *               body:
+ *                 type: string
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               pushToken:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *               body:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Push notification sent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/testPushNotification', userController.sendPushNotification);
 module.exports = router;
 
