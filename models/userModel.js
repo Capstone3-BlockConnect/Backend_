@@ -70,6 +70,11 @@ const userSchema = new mongoose.Schema({
         required: false,
         default: undefined
     },
+    pushToken: {
+        type: String,
+        required: false,
+        default: undefined
+    },
 });
 const User = mongoose.model('User', userSchema);
 module.exports = User;
